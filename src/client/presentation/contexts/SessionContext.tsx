@@ -11,7 +11,6 @@ type _T_SessionState = {
 export const initialSession: _T_SessionState = {
     redirectPath: '/'
 }
-
 export const SessionContent = createContext<[_T_SessionState, (session: _T_SessionState) => void]>([initialSession, () => {
     //
 }])
@@ -37,6 +36,7 @@ export const SessionContextProvider = (props: {
             })
 
             StoreConfig.getInstance().token = user.token
+            console.log(StoreConfig.getInstance().token)
 
         } else {
             setSessionState({

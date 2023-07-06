@@ -2,15 +2,20 @@ export type T_UserLoginVO = {
     email: string
     password: string
 }
+export type T_UserRegisterVO = {
+    email: string
+    password: string
+    name:string
+}
 
 export class UserModel {
-    // id: string
-    // username: string
+    id: string
+    username: string
     token: string
 
     constructor(data: Record<string, any>) {
-        // this.id = data.user_id
-        // this.username = data.name
-        this.token = data.access_token
+        this.id = data.data.user_id
+        this.username = data.data.name
+        this.token = data.data.api_token
     }
 }

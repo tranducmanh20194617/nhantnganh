@@ -35,24 +35,22 @@ export const AdminLayout = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(true);
     const location =useLocation()
 
-    // console.log(storeConfig.token)
-    // useEffect(() => {
-    //     if (storeConfig.token !== undefined) {
-    //         setIsLoggedIn(true);
-    //     } else {
-    //         setIsLoggedIn(false);
-    //     }
-    // }, [storeConfig.token]);
+    useEffect(() => {
+        console.log(StoreConfig.getInstance().token)
+        if (storeConfig.token !== undefined) {
+            setIsLoggedIn(true);
+        } else {
+            setIsLoggedIn(false);
+        }
+    }, [storeConfig.token]);
     // useEffect(() => {
     //     const storedToken = localStorage.getItem('user');
     //
     //     if (storedToken) {
-    //         // Có token trong localStorage
-    //         storeConfig.token = storedToken;
+    //         console.log(StoreConfig.getInstance().token)
     //         setIsLoggedIn(true);
     //     } else {
-    //         // Không có token trong localStorage
-    //         storeConfig.token = undefined;
+    //
     //         setIsLoggedIn(false);
     //     }
     //     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,17 +59,15 @@ export const AdminLayout = () => {
         localStorage.removeItem('user')
         //set token
         storeConfig.token = undefined
-
         //set lại trạng
         setSession({
             isAuthenticated: false,
             redirectPath: '/',
             user: undefined
         })
-        navigate('/')
+        navigate('/login')
         console.log('LogOut')
         setIsLoggedIn(false);
-
         message.success('ログアウトしました').then()
     }
 
@@ -151,7 +147,7 @@ export const AdminLayout = () => {
                         <Avatar size={"default"} icon={<UserOutlined/>} style={{marginRight:'10px'}}></Avatar>
                         {isLoggedIn ? (
                             <Button onClick={onLogout} style={{ marginTop: "12px" }}>
-                                ログアウト
+                                サインアウト
                             </Button>
                         ) : (
                             <Button onClick={onLogin} style={{ marginTop: "12px" }}>

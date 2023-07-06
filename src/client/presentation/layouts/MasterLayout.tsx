@@ -44,15 +44,14 @@ export const MasterLayout = () => {
     const storeConfig = StoreConfig.getInstance()
     const [isLoggedIn, setIsLoggedIn] = useState(true);
     // console.log(storeConfig.token)
-    console.log(location.pathname)
-    console.log(keyword)
-    // useEffect(() => {
-    //     if (storeConfig.token !== undefined) {
-    //         setIsLoggedIn(true);
-    //     } else {
-    //         setIsLoggedIn(false);
-    //     }
-    // }, [storeConfig.token]);
+    useEffect(() => {
+        console.log(storeConfig.token)
+        if (storeConfig.token !== undefined) {
+            setIsLoggedIn(true);
+        } else {
+            setIsLoggedIn(false);
+        }
+    }, [storeConfig.token]);
     useEffect(()=>{
         if(location.pathname==='/bikeList')
         {
@@ -100,25 +99,21 @@ export const MasterLayout = () => {
             }
         }
     ,[location])
-    // useEffect(() => {
-    //     const storedToken = localStorage.getItem('user');
-    //
-    //     if (storedToken) {
-    //         // Có token trong localStorage
-    //         storeConfig.token = storedToken;
-    //         setIsLoggedIn(true);
-    //     } else {
-    //         // Không có token trong localStorage
-    //         storeConfig.token = undefined;
-    //         setIsLoggedIn(false);
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, []);
+    useEffect(() => {
+        const storedToken = localStorage.getItem('user');
+        if (storedToken) {
+            // Có token trong localStorage
+            setIsLoggedIn(true);
+        } else {
+            // Không có token trong localStorage
+            setIsLoggedIn(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     const onLogout = () => {
         localStorage.removeItem('user')
         //set token
         storeConfig.token = undefined
-
         //set lại trạng
         setSession({
             isAuthenticated: false,
@@ -128,7 +123,6 @@ export const MasterLayout = () => {
         navigate('/')
         console.log('LogOut')
         setIsLoggedIn(false);
-
         message.success('ログアウトしました').then()
     }
 
@@ -209,7 +203,7 @@ const onLogin =()=>{
                 <Avatar size={"default"} icon={<UserOutlined/>} style={{marginRight:'10px'}}></Avatar>
                 {isLoggedIn ? (
                     <Button onClick={onLogout} style={{ marginTop: "12px" }}>
-                        ログアウト
+                        サインアウト
                     </Button>
                 ) : (
                     <Button onClick={onLogin} style={{ marginTop: "12px" }}>

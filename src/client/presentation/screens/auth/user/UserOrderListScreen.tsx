@@ -4,23 +4,38 @@ import React from "react";
 import {useState,useEffect} from "react";
 import {AxiosClient} from "@/client/repositories/AxiosClient";
 import {useParams} from "react-router-dom";
+import {App} from "@/client/const/App";
 
 const  UserOrderListScreen = () =>{
     const navigate =useNavigate()
     const {orderState} =useParams()
+    const [user,setUser] = useState(() =>
+    {
+        try {
+            const lsItem = localStorage.getItem('user')
+
+            if (lsItem) {
+                return JSON.parse(lsItem)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        return []
+    })
+
     const GetData = async (opts?: {
         onSuccess?: (data: any) => void
         onError?: (data: any) => void
     }) => {
+        console.log(user)
         if(orderState===undefined)  {
             AxiosClient
-                .get('http://127.0.0.1:8000/api/orders?limit=100&column_query=order_name,order_id,order_end,order_status&user_id=4')
+                .get(`${App.ApiUrl}/orders?limit=100&column_query=order_name,order_id,order_end,order_status&user_id=${user.data.id}`)
                 .then(r => {
                     const dataCopy = {...r.items};
                     localStorage.setItem('userOrderList', JSON.stringify(dataCopy))
                     if (opts?.onSuccess) {
                         opts.onSuccess(dataCopy)
-
                     } else if (r.error) {
                         if (opts?.onError) {
                             opts.onError(r.error)
@@ -34,7 +49,7 @@ const  UserOrderListScreen = () =>{
         }
         else {
             AxiosClient
-                .get(`http://127.0.0.1:8000/api/orders?search_by=order_status&keyword=${orderState}&user_id=4`)
+                .get(`${App.ApiUrl}/orders?search_by=order_status&keyword=${orderState}&user_id=${user.data.id}`)
                 .then(r => {
                     const dataCopy = {...r.items};
                     localStorage.setItem('userOrderList', JSON.stringify(dataCopy))

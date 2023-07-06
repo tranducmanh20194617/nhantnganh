@@ -18,7 +18,7 @@ const HomeScreen = () => {
             .get(`http://127.0.0.1:8000/bikes?&local=${value}`)
             .then(r => {
                 console.log(value)
-                navigate(`/searchBike/${value}`)
+                navigate(`/bikeList/${value}`)
             })
             .catch(e => {
                 console.log(e)

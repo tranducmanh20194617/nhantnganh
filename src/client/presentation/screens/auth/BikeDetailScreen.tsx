@@ -5,7 +5,7 @@ import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import {StoreConfig} from "@/client/config/StoreConfig";
 import {message} from "antd";
-
+import {App} from "@/client/const/App";
 const contentStyle: React.CSSProperties = {
     marginLeft: '5%',
     width: '40%',
@@ -30,16 +30,14 @@ const checkOut: React.CSSProperties = {
 const BikeDetailScreen = () => {
     const { bikeId } = useParams();
     const navigate = useNavigate();
-    const storeConfig = StoreConfig.getInstance().token
-
-    const [screen,setScreen] =useState(false)
+    const [isLoading, setIsLoading] = useState(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const GetData = async (opts?: {
         onSuccess?: (data: any) => void
         onError?: (data: any) => void
     }) => {
         AxiosClient
-            .get(`http://127.0.0.1:8000/bike/${bikeId}`)
+            .get(`${App.ApiUrl}/bike/${bikeId}`)
             .then(r => {
                 console.log(r)
                 const dataCopy ={...r.items}
@@ -72,15 +70,33 @@ const BikeDetailScreen = () => {
         }
         return []
     })
+
+    const [user,setUser] = useState(() =>
+    {
+        try {
+            const lsItem = localStorage.getItem('user')
+
+            if (lsItem) {
+                return JSON.parse(lsItem)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        return []
+    })
+
        useEffect(()=> {
+           setIsLoading(true);
            console.log('MOUNT: Bike Detail Screen')
                GetData({
                    onSuccess: (data) => {
                        console.log('GetData:onSuccess', data)
                        setBike(data)
+                       setIsLoading(false);
                    },
                    onError: (data) => {
                        console.log('GetData:onError', data)
+
                    }
                })
            // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -107,7 +123,7 @@ const BikeDetailScreen = () => {
         return []
     })
     const handleOrderDetail1 = async () =>{
-        // if(storeConfig) {
+        if(user.length!==0) {
             const isDuplicate = userOrderList.some((item: any) => item.bike_id === bike.bike_id);
             if (!isDuplicate) {
                 const dataCopy = [...userOrderList, bike];
@@ -115,13 +131,13 @@ const BikeDetailScreen = () => {
                 message.success('データが保存されました')
             }
 
-        // }
-        // else {
-        //     message.info('ログインしてください');
-        // }
+        }
+        else {
+            message.info('ログインしてください');
+        }
     }
     const handleOrderDetail2 = async () =>{
-      // if(storeConfig) {
+      if(user.length!==0) {
               const isDuplicate = userOrderList.some((item: any) => item.bike_id === bike.bike_id);
              if (!isDuplicate) {
                  const dataCopy = [...userOrderList, bike];
@@ -131,13 +147,24 @@ const BikeDetailScreen = () => {
              }
 
              navigate('/userOrderCreate')
-      // }
-      // else {
-      //     message.info('ログインしてください');
-      // }
+      }
+      else {
+          message.info('ログインしてください');
+      }
     }
     return (
         <>
+            {isLoading ? (
+                <div style={{display: 'flex',
+                    justifyContent: 'center',
+                    alignItems:'center',
+                    height: '550px',
+                    textAlign: 'center',
+                    fontSize: '25px',
+                    marginBottom: '100px'}}>
+                    <p>Loading...</p>
+                </div>
+            ) : (
             <div style={{paddingTop:'30px',paddingBottom:'30px'}}>
 
             <div style={{display:'flex', marginTop:'20px'}}>
@@ -187,6 +214,7 @@ const BikeDetailScreen = () => {
                 </div>
             </div>
             </div>
+            )}
         </>
     );
 };

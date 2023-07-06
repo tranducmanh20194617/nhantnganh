@@ -1,3 +1,3 @@
 export class App {
-    static readonly ApiUrl = 'http://127.0.0.1:8000'
+    static readonly ApiUrl = 'http://222.252.10.203:30206'
 }

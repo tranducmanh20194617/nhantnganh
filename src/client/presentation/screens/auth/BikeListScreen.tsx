@@ -1,23 +1,20 @@
-
 import React, {useEffect, useState} from "react";
 import {AxiosClient} from "@/client/repositories/AxiosClient";
 import {useNavigate, useParams} from "react-router-dom";
-import {Button, Card, Col, Divider, Input, List, message, Row, Space,Dropdown} from "antd";
-import type { PaginationProps } from 'antd';
-import { Pagination } from 'antd';
-import type { MenuProps } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
-const AdminBikeListScreen =()=>{
-    let {local,brand,price} = useParams()
-    console.log(local)
+import type {MenuProps, PaginationProps} from 'antd';
+import {Button, Card, Col, Divider, Dropdown, Input, List, message, Pagination, Row, Space} from "antd";
+import {DownOutlined} from '@ant-design/icons';
+import {App} from "@/client/const/App";
+const AdminBikeListScreen = () => {
+    let {local, brand, price} = useParams()
+
     const GetData = (opts?: {
         onSuccess?: (data: any) => void
         onError?: (data: any) => void
     }) => {
-        if (local===undefined&&brand===undefined&&price===undefined)
-        {
+        if (local === undefined && brand === undefined && price === undefined) {
             AxiosClient
-                .get(`http://127.0.0.1:8000/bikes?limit=100`)
+                .get(`${App.ApiUrl}/bikes?limit=100`)
                 .then(r => {
                     const dataCopy = {...r.items};
                     localStorage.setItem('DataBike', JSON.stringify(dataCopy))
@@ -34,11 +31,9 @@ const AdminBikeListScreen =()=>{
                 .catch(e => {
                     console.log(e)
                 })
-        }
-        else if (local!==undefined&&brand===undefined&&price===undefined)
-        {
+        } else if (local !== undefined && brand === undefined && price === undefined) {
             AxiosClient
-                .get(`http://127.0.0.1:8000/bikes?local=${local}`)
+                .get(`${App.ApiUrl}/bikes?local=${local}`)
                 .then(r => {
                     const dataCopy = {...r.items};
                     localStorage.setItem('DataBike', JSON.stringify(dataCopy))
@@ -56,12 +51,30 @@ const AdminBikeListScreen =()=>{
                     message.error('住所を入力してください')
                     console.log(e)
                 })
-        }
-
-        else if (local==='none'&&brand!==undefined&&price===undefined)
-        {
+        } else if (local === 'none' && brand !== undefined && price === undefined) {
             AxiosClient
-                .get(`http://127.0.0.1:8000/bikes?local=&search_by=brand&keyword=${brand}`)
+                .get(`${App.ApiUrl}/bikes?local=&search_by=brand&keyword=${brand}`)
+                .then(r => {
+                    const dataCopy = {...r.items};
+                    localStorage.setItem('bikeSearch', JSON.stringify(dataCopy))
+                    if (opts?.onSuccess) {
+                        opts.onSuccess(dataCopy)
+
+                    } else if (r.error) {
+                        if (opts?.onError) {
+                            opts.onError(r.error)
+                        }
+                    }
+                    console.log(r)
+                })
+                .catch(e => {
+                    message.error('該当バイクはありませんでした')
+                    console.log(e)
+                })
+
+        } else if (local !== undefined && brand !== undefined && price === undefined) {
+            AxiosClient
+                .get(`${App.ApiUrl}/bikes?local=${local}&search_by=brand&keyword=${brand}`)
                 .then(r => {
                     const dataCopy = {...r.items};
                     localStorage.setItem('bikeSearch', JSON.stringify(dataCopy))
@@ -80,10 +93,10 @@ const AdminBikeListScreen =()=>{
                     console.log(e)
                 })
         }
-        else if (local!==undefined&&brand!==undefined&&price===undefined)
+        else if (local === 'none' && brand === 'none' && price !== undefined) //trường hợp cả 1 trường không null
         {
             AxiosClient
-                .get(`http://127.0.0.1:8000/bikes?local=${local}&search_by=brand&keyword=${brand}`)
+                .get(`${App.ApiUrl}/bikes?min_price=0&max_price=${price}`)
                 .then(r => {
                     const dataCopy = {...r.items};
                     localStorage.setItem('bikeSearch', JSON.stringify(dataCopy))
@@ -102,33 +115,74 @@ const AdminBikeListScreen =()=>{
                     console.log(e)
                 })
         }
-        else if (local!==undefined&&brand!==undefined&&price!==undefined) //trường hợp cả 3 trường không null
+        else if (local !== undefined && brand === 'none' && price !== undefined) //trường hợp cả 3 trường không null
         {
-            // AxiosClient
-            //     .get(`http://127.0.0.1:8000/bikes?local=${local}&search_by=brand&keyword=${brand}`)
-            //     .then(r => {
-            //         const dataCopy = {...r.items};
-            //         localStorage.setItem('bikeSearch', JSON.stringify(dataCopy))
-            //         if (opts?.onSuccess) {
-            //             opts.onSuccess(dataCopy)
-            //
-            //         } else if (r.error) {
-            //             if (opts?.onError) {
-            //                 opts.onError(r.error)
-            //             }
-            //         }
-            //         console.log(r)
-            //     })
-            //     .catch(e => {
-            //         message.error('該当バイクはありませんでした')
-            //         console.log(e)
-            //     })
+            AxiosClient
+                .get(`${App.ApiUrl}/bikes?keyword=honda&search_by=brand&local=${local}&min_price=0&max_price=${price}`)
+                .then(r => {
+                    const dataCopy = {...r.items};
+                    localStorage.setItem('bikeSearch', JSON.stringify(dataCopy))
+                    if (opts?.onSuccess) {
+                        opts.onSuccess(dataCopy)
+
+                    } else if (r.error) {
+                        if (opts?.onError) {
+                            opts.onError(r.error)
+                        }
+                    }
+                    console.log(r)
+                })
+                .catch(e => {
+                    message.error('該当バイクはありませんでした')
+                    console.log(e)
+                })
+        }
+        else if (local === 'none' && brand !== undefined && price !== undefined) {
+            AxiosClient
+                .get(`${App.ApiUrl}/bikes?keyword=${brand}&search_by=brand&min_price=0&max_price=${price}`)
+                .then(r => {
+                    const dataCopy = {...r.items};
+                    localStorage.setItem('bikeSearch', JSON.stringify(dataCopy))
+                    if (opts?.onSuccess) {
+                        opts.onSuccess(dataCopy)
+
+                    } else if (r.error) {
+                        if (opts?.onError) {
+                            opts.onError(r.error)
+                        }
+                    }
+                    console.log(r)
+                })
+                .catch(e => {
+                    message.error('該当バイクはありませんでした')
+                    console.log(e)
+                })
+        } else if (local !== undefined && brand !== undefined && price !== undefined) //trường hợp cả 3 trường không null
+        {
+            AxiosClient
+                .get(`${App.ApiUrl}/bikes?keyword=${brand}&search_by=brand&local=${local}&min_price=0&max_price=${price}`)
+                .then(r => {
+                    const dataCopy = {...r.items};
+                    localStorage.setItem('bikeSearch', JSON.stringify(dataCopy))
+                    if (opts?.onSuccess) {
+                        opts.onSuccess(dataCopy)
+
+                    } else if (r.error) {
+                        if (opts?.onError) {
+                            opts.onError(r.error)
+                        }
+                    }
+                    console.log(r)
+                })
+                .catch(e => {
+                    message.error('該当バイクはありませんでした')
+                    console.log(e)
+                })
         }
     }
 
     const navigate = useNavigate();
-    const [Product,setProduct] = useState(() =>
-        {
+    const [Product, setProduct] = useState(() => {
             try {
                 const lsItem = localStorage.getItem('DataBike')
                 if (lsItem) {
@@ -143,20 +197,23 @@ const AdminBikeListScreen =()=>{
     const [current, setCurrent] = useState(1);
     useEffect(() => {
         console.log('MOUNT: Bike List Screen')
-        { GetData({
-            onSuccess: (data) => {
-                console.log('GetData:onSuccess', data)
-                setProduct(data)
-            },
-            onError: (data) => {
-                console.log('GetData:onError', data)
-            }
-        })}
+        {
+            GetData({
+                onSuccess: (data) => {
+                    console.log('GetData:onSuccess', data)
+                    setProduct(data)
+                },
+                onError: (data) => {
+                    console.log('GetData:onError', data)
+                }
+            })
+        }
         setCurrent(1)
         return () => {
             console.log('UNMOUNT: Bike List Screen')
         }
-    }, [local,brand,price])
+    }, [local, brand, price])
+
     const itemsPerPage = 8;
     const startIndex = (current - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -166,24 +223,38 @@ const AdminBikeListScreen =()=>{
         console.log(page);
         setCurrent(page);
     };
-    const handleViewClick = (bikeId:string) => {
+    const handleViewClick = (bikeId: string) => {
         navigate(`/bikeDetail/${bikeId}`);
     };
 
     const handleMenuClick: MenuProps['onClick'] = (e) => {
-        const { key } = e;
+        const {key} = e;
         if (local === undefined) {
             navigate(`/bikeList/none/${key}`);
-        } else if(price === undefined) {
+        } else if (price === undefined) {
             navigate(`/bikeList/${local}/${key}`);
-        }
-        else {
+        } else {
             navigate(`/bikeList/${local}/${key}/${price}`);
         }
 
     };
     const handleMenuClickPrice: MenuProps['onClick'] = (e) => {
-        const { key } = e;
+        const {key} = e;
+
+        if (local === undefined) {
+            if (brand === undefined) {
+                navigate(`/bikeList/none/none/${key}`);
+            } else {
+                navigate(`/bikeList/none/${brand}/${key}`);
+            }
+        } else {
+
+            if (brand === undefined) {
+                navigate(`/bikeList/${local}/none/${key}`);
+            } else {
+                navigate(`/bikeList/${local}/${brand}/${key}`);
+            }
+        }
 
     };
     const items: MenuProps['items'] = [
@@ -214,7 +285,7 @@ const AdminBikeListScreen =()=>{
             label: 'Harley',
             key: 'Harley',
 
-        },{
+        }, {
             label: 'BWM',
             key: 'BWM',
 
@@ -222,21 +293,21 @@ const AdminBikeListScreen =()=>{
     ];
     const itemsPrice: MenuProps['items'] = [
         {
-            label: '100',
+            label: '0-100',
             key: '100',
 
         },
         {
-            label: '200',
+            label: '0-200',
             key: '200',
 
         },
         {
-            label: '300',
+            label: '0-300',
             key: '300',
         },
         {
-            label: '400',
+            label: '0-400',
             key: '400',
         },
     ];
@@ -260,44 +331,43 @@ const AdminBikeListScreen =()=>{
     };
     const handleSubmit = () => {
         // Xử lý giá trị đã nhập ở đây, ví dụ:
-        if(inputValue.length===0)
-        {
+        if (inputValue.length === 0) {
             message.error('住所を入力してください').then();
             navigate(`/bikeList`);
-        }
-        else {
+        } else {
             navigate(`/bikeList/${inputValue}`);
-        }}
+        }
+    }
 
     return (
         < >
             {/*<div style={{marginTop:'10px',marginLeft:'1280px'}}>*/}
 
             {/*</div>*/}
-            <div style={{marginTop:'10px',marginLeft:'10px',}}>
+            <div style={{marginTop: '30px', marginLeft: '10px',minHeight:'500px'}}>
                 <Row>
                     <Col span={19}>
                         <Input placeholder="住所を入力してください!!"
-                               style={{marginBottom: '15px',marginLeft:'10px', position: '-webkit-sticky', top: 0,border: '1px solid #C38154 ',height:'40px' , width: '400px',  borderRadius:'15px/15px' }}
+                               style={{marginBottom: '15px', marginLeft: '10px', position: '-webkit-sticky', top: 0, border: '1px solid #C38154 ', height: '40px', width: '400px', borderRadius: '15px/15px'}}
                                value={inputValue}
                                onChange={handleInputChange}
                                onKeyDown={handleKeyDown}
                         />
                     </Col>
-                    <Col span={4} style={{ display: 'flex' }}>
-                        <Dropdown menu={menuProps} >
-                            <Button style={{marginRight:'10px',border: '1.5px solid #C38154 ',}}>
+                    <Col span={4} style={{display: 'flex'}}>
+                        <Dropdown menu={menuProps}>
+                            <Button style={{marginRight: '10px', border: '1.5px solid #C38154 ',}}>
                                 <Space>
                                     ブランド
-                                    <DownOutlined />
+                                    <DownOutlined/>
                                 </Space>
                             </Button>
                         </Dropdown>
                         <Dropdown menu={menuPropsPrice}>
-                            <Button style={{marginRight:'10px',border: '1.5px solid #C38154 ',}}>
+                            <Button style={{marginRight: '10px', border: '1.5px solid #C38154 ',}}>
                                 <Space>
                                     値段
-                                    <DownOutlined />
+                                    <DownOutlined/>
                                 </Space>
                             </Button>
                         </Dropdown>
@@ -305,12 +375,12 @@ const AdminBikeListScreen =()=>{
 
                 </Row>
                 <List
-                    style={{ margin: 0, padding: 0 }}
+                    style={{margin: 0, padding: 0,marginTop:'20px'}}
                     grid={{gutter: 18, column: 4}}
                     dataSource={displayedItems}
                     renderItem={(item: any) => (
                         <>
-                            <List.Item key={item.bike_id} style={{ border: '2px solid #C38154',}}>
+                            <List.Item key={item.bike_id} style={{border: '2px solid #C38154',}}>
                                 <Card
                                     hoverable
                                     onClick={() => handleViewClick(item.bike_id)}
@@ -321,18 +391,18 @@ const AdminBikeListScreen =()=>{
                                             src={`/storage/app/public/bike_image/${item.bike_id}.1.jpg`}
                                         />
                                     }
-                                    style={{ marginBottom: '-22px', padding: '0',height: '200px' }}
+                                    style={{marginBottom: '-22px', padding: '0', height: '200px'}}
                                 >
 
                                 </Card>
                                 <Card
-                                    style={{ border: '1px solid #C38154', borderRadius: 'unset', transform: 'scaleY(0.5)', marginBottom: '-22px' }}
+                                    style={{border: '1px solid #C38154', borderRadius: 'unset', transform: 'scaleY(0.5)', marginBottom: '-22px'}}
                                 >
-                                    <p style={{ textAlign: "center", fontSize: '25px', transform: 'scaleY(1.5)', margin: '0', padding: '0' }}><b>{item.bike_local}</b></p>
+                                    <p style={{textAlign: "center", fontSize: '25px', transform: 'scaleY(1.5)', margin: '0', padding: '0'}}><b>{item.bike_local}</b></p>
 
                                 </Card>
-                                <Card style={{ border: '0px solid #C38154', borderRadius: 'unset', margin: '0', padding: '0' }}>
-                                    <p style={{ textAlign: "center", fontSize: '21px', margin: '0', padding: '0' }}><b>値段: {item.bike_price}￥</b></p>
+                                <Card style={{border: '0px solid #C38154', borderRadius: 'unset', margin: '0', padding: '0'}}>
+                                    <p style={{textAlign: "center", fontSize: '21px', margin: '0', padding: '0'}}><b>値段: {item.bike_price}￥</b></p>
                                 </Card>
                             </List.Item>
 
@@ -342,12 +412,12 @@ const AdminBikeListScreen =()=>{
                     )}
                 />
 
-                <Row>
+                <Row style={{marginTop:'70px'}}>
                     <Col md={20}>
 
                     </Col>
                     <Col md={4}>
-                        <Pagination simple current={current} onChange={onChange} total={Object.values(Product).length} pageSize={itemsPerPage} style={{marginBottom:'20px'}} />
+                        <Pagination simple current={current} onChange={onChange} total={Object.values(Product).length} pageSize={itemsPerPage} style={{marginBottom: '20px'}}/>
                     </Col>
                 </Row>
 

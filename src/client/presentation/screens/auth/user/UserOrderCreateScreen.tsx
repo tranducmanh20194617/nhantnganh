@@ -8,6 +8,8 @@ import { Col, Row ,Button} from 'antd';
 import {CloseOutlined} from "@ant-design/icons";
 import {useNavigate} from "react-router-dom";
 import {AxiosClient} from "@/client/repositories/AxiosClient";
+import {StoreConfig} from "@/client/config/StoreConfig";
+import {App} from "@/client/const/App";
 const contentStyle: React.CSSProperties = {
     marginLeft: 'auto',
     height: '330px',
@@ -20,7 +22,8 @@ const contentStyle: React.CSSProperties = {
 
 
 const CreateOrder =(data:any) =>{
-    AxiosClient.post('http://127.0.0.1:8000/api/create/order/',data)
+    console.log(data)
+    AxiosClient.post(`${App.ApiUrl}}/create/order`,data)
         .then(r=>{
             if (r.success){
                 console.log(r)
@@ -37,6 +40,7 @@ const CreateOrder =(data:any) =>{
         })
 }
 const UserOrderCreateScreen = () =>{
+
     const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
     const [endDate, setEndDate] = useState<dayjs.Dayjs | null>(null);
     const [startTime, setStartTime] = useState<dayjs.Dayjs | null>(null);
@@ -46,29 +50,55 @@ const UserOrderCreateScreen = () =>{
     const [button,setButton] = useState(true)
     const [button2,setButton2] = useState(true)
     const [selectedValue, setSelectedValue] = useState<string | null>(null);
-    const route = useRouter()
+    useRouter();
     const handleSelectChange = (value: string) => {
         setSelectedValue(value);
     };
-    const  GetData = () => {
-        let maxOrderId:number = 0
-        AxiosClient
-            .get('http://127.0.0.1:8000/api/orders?limit=100&column_query=order_name,order_id,order_end,order_status&user_id=4')
-            .then(r => {
-                const dataCopy = {...r.items};
-                Object.values(dataCopy).forEach((order:any) => {
+    const storeConfig = StoreConfig.getInstance()
+    const [messageApi, contextHolder] = message.useMessage();
+    const key = 'updatable';
+    const [user,setUser] = useState(() =>
+    {
+        try {
+            const lsItem = localStorage.getItem('user')
+
+            if (lsItem) {
+                return JSON.parse(lsItem)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        return []
+    })
+    const GetData = (maxOrderId: number) => {
+        return AxiosClient.get(`${App.ApiUrl}/orders?limit=100`)
+            .then((response) => {
+                const dataCopy = { ...response.items };
+                Object.values(dataCopy).forEach((order: any) => {
                     if (order.order_id > maxOrderId) {
                         maxOrderId = order.order_id;
                     }
                 });
-                 route.push(`/userOrderDetail/${maxOrderId}`)
 
+                return maxOrderId;
             })
-            .catch(e => {
-                console.log(e)
+            .catch((error) => {
+                console.log(error);
+            });
+    };
+    const [maxOrderId, setMaxOrderId] = useState<number>(0);
+    useEffect(() => {
+        GetData(maxOrderId)
+            .then((orderId) => {
+                if (orderId !== undefined) {
+                    setMaxOrderId(orderId);
+                }
             })
+            .catch((error) => {
+                console.log(error);
+            });
+    }, [maxOrderId]);
 
-    }
     const onChangeDateStart = (date: dayjs.ConfigType) => {
         const start = dayjs(date);
         setStartDate(start);
@@ -102,7 +132,12 @@ const UserOrderCreateScreen = () =>{
             const startDateTime = dayjs(start.format("YYYY-MM-DD") + " " + startTime.format("HH:mm"));
             const endDateTime = dayjs(end.format("YYYY-MM-DD") + " " + endTime.format("HH:mm"));
             const diff = endDateTime.diff(startDateTime, "hour");
-            setTime(diff);
+            if(diff>0){
+                setTime(diff);
+            }
+            else {
+                setTime(0);
+            }
         } else {
             setTime(0);
         }
@@ -112,7 +147,6 @@ const UserOrderCreateScreen = () =>{
         await localStorage.removeItem('bikeInOrder')
         navigate('/bikeList')
     }
-
 
     const [userOrderList,setUserOrderList] =useState(() =>{
         try {
@@ -135,6 +169,15 @@ const UserOrderCreateScreen = () =>{
         money += parseInt(item.bike_price);
     });
     const [screen,setScreen] = useState(true)
+
+    useEffect(()=>{
+        if(user.length===0)
+        {
+            localStorage.removeItem('bikeInOrder')
+            setUserOrderList([])
+        }
+    },[user])
+
     useEffect(()=>{
         if(userOrderList.length===0)
         {
@@ -150,12 +193,21 @@ const UserOrderCreateScreen = () =>{
             }
         )
     },[userOrderList])
+
+    useEffect(() => {
+        console.log(user)
+        console.log('MOUNT: Admin Order Screen')
+
+        return () => {
+            console.log('UNMOUNT: User Order Create Screen')
+        }},[])
+
     if (!screen) {
         return(
             <div style={{display: 'flex',
                 justifyContent: 'center',
                 alignItems:'center',
-                height: '400px',
+                height: '450px',
                 textAlign: 'center',
                 fontSize: '25px',
                 marginBottom: '100px'}}>
@@ -163,24 +215,12 @@ const UserOrderCreateScreen = () =>{
             </div>
         )
     }
-    const bikeClassifyColors: Record<string, string> = {
-        "0": "#60B95E", // Color for order_status = "1"
-        "1": "#FF6347", // Color for order_status = "1"
 
-        // Add more key-value pairs as per your requirements
-    };
-    const bikeClassifyTexts: Record<string, string> = {
-        "0": "利用可能",
-        "1": "利用不可",
-
-        // Add more key-value pairs as per your requirements
-    };
-
-    const handleClickOrderSuccess =  async () => {
+    const handleClickOrderSuccess = async () => {
         const orderIds = userOrderList.map((order: any) => order.bike_id);
         const updateOrderList = Object.values(userOrderList).filter((order: any) => order.bike_classify === '1');
-        console.log(userOrderList)
-        console.log(updateOrderList)
+        console.log(userOrderList);
+        console.log(updateOrderList);
         const orderIdsString = orderIds.join(',');
         const quality = Object.values(userOrderList).length;
         const bikeIds = Object.values(userOrderList).map((item: any) => item.bike_id);
@@ -189,39 +229,57 @@ const UserOrderCreateScreen = () =>{
         const formattedStartTime = startTime?.format("HH:mm:ss") || "";
         const formattedEndTime = endTime?.format("HH:mm:ss") || "";
         const currentTime = dayjs().format("YYYY-MM-DD");
-        const data = {
-            order_start: `${formattedStartDate} ${formattedStartTime}`,
-            order_end: `${formattedEndDate} ${formattedEndTime}`,
-            order_name: "thanhnt9_" + currentTime,
-            order_total: money,
-            order_time: time,
-            user_id: 4, // Update with the correct user ID
-            order_address: selectedValue, // Update with the correct address
-            bikes: orderIdsString,
-            bike_quantity: quality,
+        console.log(maxOrderId)
+        const openMessage = async () => {
+            await messageApi.open({
+                key,
+                type: 'loading',
+                content: 'Loading...',
+            });
+            setTimeout(async () => {
+
+                if (formattedStartDate < currentTime || formattedEndDate < currentTime) {
+                    message.error('後日または今日を入力してください');
+                } else if (formattedStartDate > formattedEndDate) {
+                    message.error('終了日は開始日よりも後の日付にする必要があります');
+                } else {
+                    const data = {
+                        order_start: `${formattedStartDate} ${formattedStartTime}`,
+                        order_end: `${formattedEndDate} ${formattedEndTime}`,
+                        order_name: user.data.name + '_' + currentTime,
+                        order_total: money,
+                        order_time: time,
+                        user_id: user.data.id, // Cập nhật với ID người dùng chính xác
+                        order_address: userOrderList[0].bike_address, // Cập nhật với địa chỉ chính xác
+                        bikes: orderIdsString,
+                        bike_quantity: quality,
+                    };
+
+                    if (!button) {
+                        setButton2(false);
+                        setUserOrderList(updateOrderList);
+                        localStorage.setItem('bikeInOrder', JSON.stringify(updateOrderList));
+                    } else {
+                        setButton2(true);
+                        await CreateOrder(data); // Chờ thông báo hoàn thành
+                        console.log(maxOrderId + 1);
+
+                        navigate(`/userOrderDetail/${maxOrderId+1}`)
+                    }
+                    console.log(data);
+
+                }
+            }, 1000); // Giảm thời gian chờ xuống còn 0.5 giây (500 milliseconds)
         };
 
-            if (!button) {
-                setButton2(false)
-                await setUserOrderList(updateOrderList)
-                await localStorage.setItem('bikeInOrder', JSON.stringify(updateOrderList))
+        await openMessage();
+    };
 
-            } else {
-                setButton2(true)
-                await CreateOrder(data)
-                await GetData()
-
-
-            }
-            console.log(data)
-
-        };
-
+    // @ts-ignore
     return(
         <>
-
-            <Row style={{marginTop:'20px'}}>
-                <Col style={{marginLeft:'150px'}}>
+            <Row style={{marginTop:'40px',minHeight:'550px'}}>
+                <Col style={{marginLeft:'230px'}}>
                     <div style={{ display: 'flex' }}>
                         <div
                             style={{
@@ -284,10 +342,16 @@ const UserOrderCreateScreen = () =>{
                                     placeholder="住所を選択してください"
                                     style={{width:'400px',borderRadius:'0px'}}
                                 >
-                                    <Option value="250 Minh Khai, Hai ba trung, Ha noi, Viet nam">250 Minh Khai, Hai ba trung, Ha noi, Viet nam</Option>
+                                    <Option value="250 Minh Khai, Hai ba trung, Ha noi">250 Minh Khai, Hai ba trung, Ha noi</Option>
                                     <Option value="03 Thuy Khue, Tay Ho, Ha Noi">03 Thuy Khue, Tay Ho, Ha Noi</Option>
                                     <Option value="29 Gia Thuy, Long Bien, Ha Noi">29 Gia Thuy, Long Bien, Ha Noi</Option>
                                     <Option value="28 Nguyen Dong Chi, Cau Dien, Nam Tu Liem, Ha Noi">28 Nguyen Dong Chi, Cau Dien, Nam Tu Liem, Ha Noi</Option>
+                                    <Option value="258 Thinh Liet, Hoang Mai, Ha Noi">258 Thinh Liet, Hoang Mai, Ha Noi</Option>
+                                    <Option value="57 Hang Ma, Hoan Kiem, Ha Noi">57 Hang Ma, Hoan Kiem, Ha Noi</Option>
+                                    <Option value="208 Hoang Quoc Viet, Co Nhue, Bac Tu Liem, Ha Noi">208 Hoang Quoc Viet, Co Nhue, Bac Tu Liem, Ha Noi</Option>
+                                    <Option value="55 Giap Nhat, Thuong Dinh, Thanh Xuan, Ha Noi">55 Giap Nhat, Thuong Dinh, Thanh Xuan, Ha Noi</Option>
+                                    <Option value="07 Dien Bien Phu, Dien Bien, Ba Dinh, Ha Noi">07 Dien Bien Phu, Dien Bien, Ba Dinh, Ha Noi</Option>
+                                    <Option value="36 Quan Hoa, Cau Giay, Ha Noi">36 Quan Hoa, Cau Giay, Ha Noi</Option>
                                 </Select>
                             </div>
                         </div>
@@ -308,6 +372,7 @@ const UserOrderCreateScreen = () =>{
                             <Button  type="primary" danger onClick={handleClickOrderCancel}
                                      style={{width: '150px' ,fontSize:'22px',paddingBottom:'30px',backgroundColor:'#df6565',color:'black'}}>
                                 キャンセル</Button>
+                            {contextHolder}
                             <Button  type="primary" danger onClick={handleClickOrderSuccess}
                                      style={{width: '150px' ,fontSize:'22px',paddingBottom:'30px',backgroundColor:'#60B95E',color:'black',marginLeft:'35px'}}>
                                 オーダー</Button>
@@ -315,14 +380,14 @@ const UserOrderCreateScreen = () =>{
 
                     </div>
                     {button2 ?
-                    null: (
-                        <div>
-                            <div style={{backgroundColor:'#FF6B65',maxWidth:'400px',textAlign:'center',borderRadius:'15px',marginLeft:'20px', marginBottom:"50px"}}>
-                                <b style={{fontSize:'24px',color:"white"}}>現在、その場所には注文の車両がありません
-                                </b>
+                        null: (
+                            <div>
+                                <div style={{backgroundColor:'#FF6B65',maxWidth:'400px',textAlign:'center',borderRadius:'15px',marginLeft:'20px', marginBottom:"50px"}}>
+                                    <b style={{fontSize:'24px',color:"white"}}>現在、その場所には注文の車両がありません
+                                    </b>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
                 </Col>
             </Row>
         </>
