@@ -1,3 +1,3 @@
 export class App {
-    static readonly ApiUrl = 'http://222.252.10.203:30206'
+    static readonly ApiUrl = 'https://any.autotimelapse.net:30207'
 }

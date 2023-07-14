@@ -8,7 +8,7 @@ import {StoreConfig} from "@/client/config/StoreConfig";
 import {App} from "@/client/const/App";
 const contentStyle: React.CSSProperties = {
     marginLeft: '5%',
-    width: '40%',
+    width: '50%',
     height: '600px',
     color: '#fff',
     background: 'rgb(132, 115, 94)',
@@ -26,8 +26,8 @@ const checkOut: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     paddingBottom: '100px',
-    marginTop: '60px'
-
+    marginTop: '60px',
+    marginLeft:'70px'
 };
 const AdminBikeDetailScreen = () => {
     const {bikeId} = useParams();
@@ -40,7 +40,7 @@ const AdminBikeDetailScreen = () => {
         onError?: (data: any) => void
     }) => {
         AxiosClient
-            .get(`${App.ApiUrl}/${bikeId}`)
+            .get(`${App.ApiUrl}/bike/${bikeId}`)
             .then(r => {
                 console.log(r)
                 const dataCopy = {...r.items}
@@ -73,7 +73,17 @@ const AdminBikeDetailScreen = () => {
         }
         return []
     })
-
+    let imagePath
+    let imagePath2
+    let imagePath3
+    if(bike.length!==0)
+    {
+        imagePath = `${App.ApiUrl}${bike.bikeImage?.[0]?.bike_image}`;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        imagePath2 = `${App.ApiUrl}${bike.bikeImage?.[1]?.bike_image}`;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        imagePath3 = `${App.ApiUrl}${bike.bikeImage?.[2]?.bike_image}`;
+    }
     useEffect(() => {
         setIsLoading(true);
         console.log('MOUNT: Bike Detail Screen')
@@ -133,20 +143,18 @@ const AdminBikeDetailScreen = () => {
     };
     const DeleteBike = (id:any) =>{         //logic delete bike
         console.log(id)
-        AxiosClient.get(`http://127.0.0.1:8000/delete/bike/${id}`)
+        AxiosClient.post(`${App.ApiUrl}/delete/bike/${id}`,{})
             .then(r=>{
                 console.log(r)
-
             })
             .catch(e => {
                 console.log(e)
-                message.error('')
             })
     }
  const onEditBike = (data :any,id:any) =>{
      console.log(data)
      console.log(id)
-     AxiosClient.post(`http://127.0.0.1:8000/update/bike/${bike.bike_id}`,data)
+     AxiosClient.post(`${App.ApiUrl}/update/bike/${bike.bike_id}`,data)
          .then(r=>{
              if (r.success){
                  console.log(r)
@@ -291,12 +299,12 @@ const AdminBikeDetailScreen = () => {
     };
 
 
-    const imagePath = `/storage/app/public/bike_image/${bikeId}.1.jpg`;
-    const imagePath2 = `/storage/app/public/bike_image/${bikeId}.2.jpg`;
-    const imagePath3 = `/storage/app/public/bike_image/${bikeId}.3.jpg`;
+
     return (
         <>    {isLoading ? (
-            <div style={{display: 'flex',
+            <div style={{
+                minHeight:'540px'
+                ,display: 'flex',
                 justifyContent: 'center',
                 alignItems:'center',
                 height: '550px',
@@ -343,7 +351,7 @@ const AdminBikeDetailScreen = () => {
                         <p style={{background: 'rgb(0, 195, 177)', width: '100px', marginLeft: '20px', textAlign: 'center', borderRadius: '10px', color: 'black'}}>在庫あり</p>
                         <div style={{display: 'flex', color: 'white'}}>
                             <p style={{marginLeft: '30px', fontSize: '30px', marginTop: '15px', width: '50%'}}><b>{bike.bike_name}</b></p>
-                            <p style={{marginLeft: '30px', fontSize: '35px', marginTop: '10px', width: '50%'}}><b>{bike.bike_price}￥/時間</b></p>
+                            <p style={{marginLeft: '30px', fontSize: '35px', marginTop: '10px', width: '50%'}}><b>{bike.bike_price}VND/時間</b></p>
                         </div>
 
                         <div style={{...listType}}>

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {Form, Input, Upload, Button, Select, message} from 'antd';
-import { PlusOutlined, PlusCircleOutlined, CloseOutlined } from '@ant-design/icons';
+import { PlusCircleOutlined, CloseOutlined ,UploadOutlined} from '@ant-design/icons';
 import {useNavigate} from "react-router-dom";
 import {AxiosClient} from "@/client/repositories/AxiosClient";
 import {App} from "@/client/const/App";
+import { data } from 'autoprefixer';
 const CreateBike = (data:any) =>{
     console.log(data)
     AxiosClient.post(`${App.ApiUrl}/create/bike`,data)
@@ -33,37 +34,54 @@ const NewBikeFormScreen = () => {
     const [consumption, setConsumption] = useState('');
     const [local, setLocal] = useState('');
     const [price, setPrice] = useState('');
+    const [plateNum, setPlateNum] = useState('');
+    const [uploadedFiles, setUploadedFiles] = useState([]);
+
+    // error
+    const [priceError, setPriceError] = useState('');
+    const [capacityError, setCapacityError] = useState('');
+    const [tankCapacityError, setTankCapacityError] = useState('');
+    const [consumptionError, setConsumptionError] = useState('');
     const handleSelectChange = (value: string) => {
         setSelectedValue(value);
     };
-
+    //sua ham nay
     const handleCreateBike = async () => {
-        const Data = {
-            productName,
-            brand,
-            capacity,
-            tankCapacity,
-            consumption,
-            selectedValue,
-            local,
-            price
-        };
-        const DataCopy = {
-            bike_name:Data.productName,
-            bike_brand:Data.brand,
-            bike_capacity:Data.capacity,
-            bike_tank:Data.tankCapacity,
-            bike_consumption:Data.consumption,
-            bike_address:Data.selectedValue,
-            bike_price:Data.price,
-            bike_local:Data.local,
-            bike_classify:0
-        };
-        console.log(DataCopy)
-        await CreateBike(DataCopy)
-        setTimeout(() => {
-            navigate('/adminBikeList');
-        }, 3000); // Chờ 1 giây trước khi chuyển hướng
+        const isFormValid = isEmptyForm();
+        if (isFormValid) {
+            const Data = {
+                productName,
+                brand,
+                capacity,
+                tankCapacity,
+                consumption,
+                selectedValue,
+                local,
+                price,
+                uploadedFiles,
+                plateNum,
+            };
+            const DataCopy = {
+                bike_name:Data.productName,
+                bike_brand:Data.brand,
+                bike_capacity:Data.capacity,
+                bike_tank:Data.tankCapacity,
+                bike_consumption:Data.consumption,
+                bike_address:Data.selectedValue,
+                bike_price:Data.price,
+                bike_local:Data.local,
+                bike_classify:0,
+                bike_images:Data.uploadedFiles,
+                bike_plate_num:Data.plateNum,
+            };
+            console.log(DataCopy);
+            await CreateBike(DataCopy);
+            setTimeout(() => {
+                navigate('/adminBikeList');
+            }, 3000); // Chờ 1 giây trước khi chuyển hướng
+        } else {
+            message.error('完全な情報を入力してください。');
+        }
     };
     const handleCancel = async () => {
         await  message.success('キャンセルしました').then()
@@ -77,9 +95,58 @@ const NewBikeFormScreen = () => {
         if (Array.isArray(e)) {
             return e;
         }
+        setUploadedFiles(e?.fileList.map((file: any) => file.originFileObj));
         return e?.fileList;
     };
+    const invalidInputHandle = (e: any, setter: any) => {
+        const value = e.target.value;
+        setter(value);
+        switch(e.target.name) {
+            case 'capacity':
+                if (isNaN(Number(value))) {
+                    setCapacityError('数字を入力してください !');
+                } else {
+                    setCapacityError('');
+                }
+                break;
+            case 'price':
+                if (isNaN(Number(value))) {
+                    setPriceError('数字を入力してください !');
+                } else {
+                    setPriceError('');
+                }
+                break;
+            case 'tank_capacity':
+                if (isNaN(Number(value))) {
+                    setTankCapacityError('数字を入力してください !');
+                } else {
+                    setTankCapacityError('');
+                }
+                break;
+            case 'consumption':
+                if (isNaN(Number(value))) {
+                    setConsumptionError('数字を入力してください !');
+                } else {
+                    setConsumptionError('');
+                }
+                break;
+            default:
+                return null
+        }
 
+    };
+
+    // them ham nay
+    const isEmptyForm = () => {
+        let isValid = true;
+
+        // Kiểm tra từng trường và đặt isValid thành false nếu trường nào chưa được nhập
+        if (!productName || !brand || !capacity || !tankCapacity || !consumption || !selectedValue || !local || !price || uploadedFiles.length === 0) {
+            isValid = false;
+        }
+
+        return isValid;
+    };
     return (
         <div style={{ display: 'flex', flexWrap: 'wrap', margin: '10px', marginBottom: '20px', marginTop: '20px' }}>
             <div style={{ maxWidth: '1000px', backgroundColor: 'rgb(207, 183, 161)', padding: '30px', borderRadius: '5px', marginLeft: '30px', marginBottom: '20px' }}>
@@ -97,12 +164,16 @@ const NewBikeFormScreen = () => {
                     </Form.Item>
                     <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                         {/* bike_local */}
-                        <Form.Item label="ローカル" colon={true} style={{ maxWidth: '90%' }}>
-                            <Input style={{ marginLeft: '20px' }} placeholder="ローカル" value={local} onChange={(e) => handleInputChange(e, setLocal)} />
+                        <Form.Item label="ナンバープレート" colon={true} style={{ maxWidth: '90%' }}>
+                            <Input name="plate_num" style={{ marginLeft: '20px' }} placeholder="ナンバープレート" value={plateNum} onChange={(e) => handleInputChange(e, setPlateNum)} />
                         </Form.Item>
                         {/* bike_price */}
                         <Form.Item label="値段" colon={true} style={{ maxWidth: '90%' }}>
-                            <Input style={{ marginLeft: '20px' }} placeholder="値段" value={price} onChange={(e) => handleInputChange(e, setPrice)} />
+                            <Input name="price" style={{ marginLeft: '20px' }} placeholder="値段" value={price} onChange={(e) => {
+                                handleInputChange(e, setPrice);
+                                invalidInputHandle(e, setPriceError);
+                            }} />
+                            {priceError && <div style={{ color: 'red', marginLeft: '20px' }}>{priceError}</div>}
                         </Form.Item>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap' }}>
@@ -112,20 +183,34 @@ const NewBikeFormScreen = () => {
                         </Form.Item>
                         {/* bike_tank */}
                         <Form.Item label="容量" colon={true} style={{ maxWidth: '90%' }}>
-                            <Input style={{ marginLeft: '20px' }} placeholder="容量" value={capacity} onChange={(e) => handleInputChange(e, setCapacity)} />
+                            <Input name='capacity' style={{ marginLeft: '20px' }} placeholder="容量" value={capacity} onChange={(e) => {
+                                handleInputChange(e, setCapacity);
+                                invalidInputHandle(e, setCapacityError);
+                            }} />
+                            {capacityError && <div style={{ color: 'red', marginLeft: '20px' }}>{capacityError}</div>}
                         </Form.Item>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                         {/* bike_capacity */}
                         <Form.Item label="ボンベ容量" colon={true} style={{ maxWidth: '90%' }}>
-                            <Input style={{ marginLeft: '20px' }} placeholder="ボンベ容量" value={tankCapacity} onChange={(e) => handleInputChange(e, setTankCapacity)} />
+                            <Input name='tank_capacity' style={{ marginLeft: '20px' }} placeholder="ボンベ容量" value={tankCapacity} onChange={(e) => {
+                                handleInputChange(e, setTankCapacity);
+                                invalidInputHandle(e, setTankCapacityError);
+                            }} />
+                            {tankCapacityError && <div style={{ color: 'red', marginLeft: '20px' }}>{tankCapacityError}</div>}
                         </Form.Item>
                         {/* bike_consumption */}
                         <Form.Item label="燃費" colon={true} style={{ maxWidth: '90%' }}>
-                            <Input style={{ marginLeft: '20px' }} placeholder="燃費" value={consumption} onChange={(e) => handleInputChange(e, setConsumption)} />
+                            <Input name='consumption' style={{ marginLeft: '20px' }} placeholder="燃費" value={consumption} onChange={(e) => {
+                                handleInputChange(e, setConsumption);
+                                invalidInputHandle(e, setConsumptionError);
+                            }} />
+                            {consumptionError && <div style={{ color: 'red', marginLeft: '20px' }}>{consumptionError}</div>}
                         </Form.Item>
                     </div>
-
+                    <Form.Item label="ローカル" colon={true} style={{ maxWidth: '90%' }}>
+                        <Input name="local" style={{ marginLeft: '20px' }} placeholder="ローカル" value={local} onChange={(e) => handleInputChange(e, setLocal)} />
+                    </Form.Item>
                     <Form.Item label="エリア" style={{ maxWidth: '90%' }}>
                         <Select style={{ marginLeft: '20px' }} placeholder="エリア" value={selectedValue} onChange={handleSelectChange}>
                             <Select.Option value="250 Minh Khai, Hai ba trung, Ha noi, Viet nam">250 Minh Khai, Hai ba trung, Ha noi, Viet nam</Select.Option>
@@ -140,11 +225,15 @@ const NewBikeFormScreen = () => {
 
                         </Select>
                     </Form.Item>
-                    <Form.Item label="イメージ" valuePropName="fileList" getValueFromEvent={normFile}>
-                        <Upload action="/upload.do" listType="picture-card">
-                            <div>
-                                <PlusOutlined />
-                            </div>
+
+                    <Form.Item
+                        name="upload"
+                        label="イメージ"
+                        valuePropName="fileList"
+                        getValueFromEvent={normFile}
+                    >
+                        <Upload name="logo" action="/upload.do" listType="picture">
+                            <Button icon={<UploadOutlined />}>画像をアップロード</Button>
                         </Upload>
                     </Form.Item>
                 </Form>

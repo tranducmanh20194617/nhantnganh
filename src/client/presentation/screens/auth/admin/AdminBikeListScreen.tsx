@@ -6,7 +6,7 @@ import {Button, Card, Col, Divider, Input, List, message, Row, Space,Dropdown} f
 import type { PaginationProps } from 'antd';
 import { Pagination } from 'antd';
 import type { MenuProps } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
+import {DownOutlined, SearchOutlined} from '@ant-design/icons';
 const AdminBikeListScreen =()=>{
     let {local,brand,price} =useParams()
     console.log(local)
@@ -340,7 +340,7 @@ return (
         {/*<div style={{marginTop:'10px',marginLeft:'1280px'}}>*/}
 
         {/*</div>*/}
-        <div style={{marginTop:'10px',marginLeft:'10px',}}>
+        <div style={{marginTop:'10px',marginLeft:'10px',minHeight:'540px'}}>
             <Row>
                 <Col span={19}>
             <Input placeholder="住所を入力してください!!"
@@ -348,6 +348,7 @@ return (
                    value={inputValue}
                    onChange={handleInputChange}
                    onKeyDown={handleKeyDown}
+                   prefix={<SearchOutlined />}
             />
                 </Col>
                 <Col span={4} style={{ display: 'flex' }}>
@@ -372,7 +373,7 @@ return (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
                                         alt="example"
-                                        src={`/storage/app/public/bike_image/${item.bike_id}.1.jpg`}
+                                        src={`${App.ApiUrl}${item.bikeImage?.[0]?.bike_image}`}
                                     />
                                 }
                                 style={{ marginBottom: '-22px', padding: '0',height: '200px' }}
@@ -386,7 +387,7 @@ return (
 
                             </Card>
                             <Card style={{ border: '0px solid #C38154', borderRadius: 'unset', margin: '0', padding: '0' }}>
-                                <p style={{ textAlign: "center", fontSize: '21px', margin: '0', padding: '0' }}><b>値段: {item.bike_price}￥</b></p>
+                                <p style={{ textAlign: "center", fontSize: '21px', margin: '0', padding: '0' }}><b>値段: {item.bike_price}VND</b></p>
                             </Card>
                         </List.Item>
 

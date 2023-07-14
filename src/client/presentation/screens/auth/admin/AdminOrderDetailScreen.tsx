@@ -114,7 +114,7 @@ const AdminOrderDetailScreen =()=> {
     const changeStatus = async (data:any) =>{
         console.log(123)
         try {
-            const response: AxiosResponse<any> = await AxiosClient.post(`http://127.0.0.1:8000/update/order/${adminOrderId}`, data);
+            const response: AxiosResponse<any> = await AxiosClient.post(`${App.ApiUrl}/update/order/${adminOrderId}`, data);
             console.log('success', response);
             return response;
         } catch (error) {
@@ -198,7 +198,9 @@ const AdminOrderDetailScreen =()=> {
     return(
         <>
             {isLoading ? (
-                <div style={{display: 'flex',
+                <div style={{
+                    minHeight:'540px'
+                    ,display: 'flex',
                     justifyContent: 'center',
                     alignItems:'center',
                     height: '550px',
@@ -208,7 +210,7 @@ const AdminOrderDetailScreen =()=> {
                     <p>Loading...</p>
                 </div>
             ) : (
-        <div style={{marginTop:"15px", marginBottom:"15px"}}>
+        <div style={{marginTop:"15px", marginBottom:"15px",minHeight:'540px'}}>
             <div style={{background:"rgb(132, 115, 94)", borderRadius:"5px", display:"flex", justifyContent:"space-between", padding:"15px"}}>
                 <h2 style={{color:"white", margin:"auto"}}>{adminOrderDetailOrder.order_name}</h2>
                 <div className="order-status" style={{float:"left", marginRight:"70px", background:order_status[adminOrderDetailOrder.order_status].status_color, width:"150px", lineHeight:"1rem", textAlign:"center", borderRadius:"20px"}}>
@@ -226,13 +228,14 @@ const AdminOrderDetailScreen =()=> {
                         overflowX: 'hidden',
                         maxWidth: "min(30%,400px)",
                         borderBottom: "solid",
+
                     }}
                 >
 
                     {Object.values(adminOrderBike).map((bike:any) => (
                         <div key={bike.bike_id} style={{display:'flex',width:'500px'}}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={`/storage/app/public/bike_image/${bike.bike_id}.1.jpg`} alt=""
+                            <img src={`${App.ApiUrl}${bike[0].bike_image}`} alt=""
                                  style={{height:'150px',border:'1px solid #C38154',marginRight:'10px',marginBottom:'10px'}}/>
                             <div style={{marginLeft:"40px"}}>
                                 <div style={{fontSize:'20px', fontWeight:"bold", width:"220px"}}>{bike.bike_name}</div>
@@ -277,9 +280,9 @@ const AdminOrderDetailScreen =()=> {
                     <div className='order-total' style={orderTotal}>
                         {/* tinh tien neu qua thoi gian order */}
                         <div style={{display:order_status[adminOrderDetailOrder.order_status].total_style}}>
-                            <div style={{textAlign:"right", marginRight:"100px", fontSize:"30px", fontWeight:"bold"}}>¥{adminOrderDetailOrder.order_total}</div>
+                            <div style={{textAlign:"right", marginRight:"100px", fontSize:"30px", fontWeight:"bold"}}>{adminOrderDetailOrder.order_total}VND</div>
                             <div style={{textAlign:"right", marginRight:"200px", fontSize:"30px", fontWeight:"bold"}}>+</div>
-                            <div style={{textAlign:"right", marginRight:"100px", fontSize:"30px", fontWeight:"bold"}}>¥50</div>
+                            <div style={{textAlign:"right", marginRight:"100px", fontSize:"30px", fontWeight:"bold"}}>5000VND</div>
                             <hr
                                 style={{
                                     alignItems:"center",
@@ -294,8 +297,8 @@ const AdminOrderDetailScreen =()=> {
                         {/* thanh tien */}
                         <div style={{display:"flex", justifyContent:"space-between", marginLeft:"100px", marginRight:"100px"}}>
                             <h2 style={{ fontSize:"30px"}}>合計: </h2>
-                            <h2 style={{ fontSize:"30px",display:displayOrder1[adminOrderDetailOrder.order_status]}}>¥{adminOrderDetailOrder.order_total*adminOrderDetailOrder.order_time}</h2>
-                            <h2 style={{ fontSize:"30px",display:displayOrder[adminOrderDetailOrder.order_status]}}>¥{(adminOrderDetailOrder.order_total+50)*adminOrderDetailOrder.order_time}</h2>
+                            <h2 style={{ fontSize:"30px",display:displayOrder1[adminOrderDetailOrder.order_status]}}>{adminOrderDetailOrder.order_total*adminOrderDetailOrder.order_time}VND</h2>
+                            <h2 style={{ fontSize:"30px",display:displayOrder[adminOrderDetailOrder.order_status]}}>{(adminOrderDetailOrder.order_total+5000)*adminOrderDetailOrder.order_time}VND</h2>
                         </div>
 
                     </div>

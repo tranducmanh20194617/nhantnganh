@@ -1,10 +1,11 @@
 import {useNavigate} from "react-router";
-import {Button, Col, Input, message, Row, Space} from "antd";
+import {Button, Col, Input, message, Pagination, PaginationProps, Row, Space} from "antd";
 import React, {useEffect, useState} from "react";
 
 import {AxiosClient} from "@/client/repositories/AxiosClient";
 import {useParams} from "react-router-dom";
 import {App} from "@/client/const/App";
+import {SearchOutlined} from "@ant-design/icons";
 
 const AdminOrderList = () => {
     const {userName, state} = useParams()
@@ -19,7 +20,7 @@ const AdminOrderList = () => {
     }) => {
         if (userName === undefined && state === undefined) {
             AxiosClient
-                .get(`${App.ApiUrl}/orders/`)
+                .get(`${App.ApiUrl}/orders?limit=100`)
                 .then(r => {
                     const dataCopy = {...r.items};
                     localStorage.setItem('adminOrderList', JSON.stringify(dataCopy))
@@ -59,7 +60,7 @@ const AdminOrderList = () => {
         } else if (state !== undefined && userName === 'none') {
 
             AxiosClient
-                .get(`${App.ApiUrl}/orders?search_by=order_status&keyword=${state}`)
+                .get(`${App.ApiUrl}/orders?limit=100&search_by=order_status&keyword=${state}`)
                 .then(r => {
                     const dataCopy = {...r.items};
                     localStorage.setItem('adminOrderList', JSON.stringify(dataCopy))
@@ -79,7 +80,7 @@ const AdminOrderList = () => {
                 })
         } else if (state !== undefined && userName !== undefined) {
             AxiosClient
-                .get(`${App.ApiUrl}/orders?limit=5&column_query=order_name,order_id,order_end,order_start,order_status&keyword=nt9&search_by=order_name&keyword=${userName}`)
+                .get(`${App.ApiUrl}/orders?limit=100&column_query=order_name,order_id,order_end,order_start,order_status&keyword=nt9&search_by=order_name&keyword=${userName}`)
                 .then(r => {
                     const dataCopy = {...r.items};
                     localStorage.setItem('adminOrderList', JSON.stringify(dataCopy))
@@ -117,6 +118,7 @@ const AdminOrderList = () => {
             return []
         }
     )
+    const [current, setCurrent] = useState(1);
     useEffect(() => {
         console.log('MOUNT: Admin Order Screen')
         {
@@ -131,11 +133,20 @@ const AdminOrderList = () => {
                 }
             })
         }
+        setCurrent(1)
         return () => {
             console.log('UNMOUNT: Admin Screen')
         }
     }, [userName, state])
-    let filteredOrders = adminOrderList
+    const itemsPerPage = 8;
+    const startIndex = (current - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const displayedItems = Object.values(adminOrderList).slice(startIndex, endIndex);
+    const onChange: PaginationProps['onChange'] = (page) => {
+        console.log(page);
+        setCurrent(page);
+    };
+
     const handleSubmit = () => {
         // Xử lý giá trị đã nhập ở đây, ví dụ:
         if (inputValue.length === 0) {
@@ -161,22 +172,22 @@ const AdminOrderList = () => {
                 break;
             case '借りる':
 
-                    navigate('/adminOrderList/none/2')
+                navigate('/adminOrderList/none/2')
                 break;
             case '時代遅れ':
 
-                    navigate('/adminOrderList/none/3')
+                navigate('/adminOrderList/none/3')
 
 
                 break;
             case '完了':
 
-                    navigate('/adminOrderList/none/4')
+                navigate('/adminOrderList/none/4')
 
 
                 break;
             case 'キャンセル':
-                    navigate('/adminOrderList/none/5')
+                navigate('/adminOrderList/none/5')
 
 
                 break;
@@ -211,7 +222,7 @@ const AdminOrderList = () => {
 
     return (
         <>
-            <div style={{marginTop: "10px"}}>
+            <div style={{marginTop: "10px",minHeight:'540px'}}>
                 <div style={{border: '1px solid', borderRadius: '20px', padding: '10px', backgroundColor: '#84735e', textAlign: "center"}}>
                     <b style={{fontSize: '20px', color: 'white'}}>オーダーリスト</b>
                 </div>
@@ -247,34 +258,43 @@ const AdminOrderList = () => {
                                    value={inputValue}
                                    onChange={handleInputChange}
                                    onKeyDown={handleKeyDown}
+                                   prefix={<SearchOutlined />}
                             />
                         </Col>
                     </Row>
                 </Space>
-                <div style={{marginTop: '7px', backgroundColor: '#cfb7a1', borderRadius: '15px', marginBottom: '7px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingBottom: '100px', paddingTop: '50px', minHeight: '400px'}}>
-                    {Object.values(adminOrderList).map((order: any) => (
-                        <div key={order.order_id} style={{display: display}}>
-                            <div style={{marginLeft: '-20px', marginTop: '10px', display: 'flex', fontSize: '20px'}}>
-                                <div style={{backgroundColor: bikePriceColors[order.order_status] || 'white', width: '200px', position: 'absolute', marginLeft: '570px', textAlign: 'right', borderRadius: '15px', paddingRight: '10px'}}>
-                                    {bikePriceTexts[order.order_status]}
+                <div style={{marginTop: '7px', backgroundColor: '#cfb7a1', borderRadius: '15px', marginBottom: '7px'}}>
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingBottom: '100px', paddingTop: '50px', minHeight: '400px'}}>
+                        {Object.values(displayedItems).map((order: any) => (
+                            <div key={order.order_id} style={{display: display}}>
+                                <div style={{marginLeft: '-20px', marginTop: '10px', display: 'flex', fontSize: '20px'}}>
+                                    <div style={{backgroundColor: bikePriceColors[order.order_status] || 'white', width: '200px', position: 'absolute', marginLeft: '570px', textAlign: 'right', borderRadius: '15px', paddingRight: '10px'}}>
+                                        {bikePriceTexts[order.order_status]}
+                                    </div>
+                                    <div style={{backgroundColor: 'white', width: '650px', position: 'relative', textAlign: 'center', borderRadius: '15px'}}>
+                                        {order.order_name}
+                                    </div>
+                                    <Button
+                                        style={{marginLeft: '220px'}}
+                                        onClick={() => handleOrderClick(order.order_id)}//xử lí view order
+                                    >
+                                        ショー
+                                    </Button>
                                 </div>
-                                <div style={{backgroundColor: 'white', width: '650px', position: 'relative', textAlign: 'center', borderRadius: '15px'}}>
-                                    {order.order_name}
-                                </div>
-                                <Button
-                                    style={{marginLeft: '220px'}}
-                                    onClick={() => handleOrderClick(order.order_id)}//xử lí view order
-                                >
-                                    ショー
-                                </Button>
+
                             </div>
+                        ))}
 
-                        </div>
-                    ))}
+                    </div>
+                    <Row>
+                        <Col md={20}>
 
+                        </Col>
+                        <Col md={4}>
+                            <Pagination simple current={current} onChange={onChange} total={Object.values(adminOrderList).length} pageSize={itemsPerPage} style={{marginBottom: '20px'}}/>
+                        </Col>
+                    </Row>
                 </div>
-
-
             </div>
         </>
     )

@@ -10,6 +10,7 @@ import {useNavigate} from "react-router-dom";
 import {AxiosClient} from "@/client/repositories/AxiosClient";
 import {StoreConfig} from "@/client/config/StoreConfig";
 import {App} from "@/client/const/App";
+import { notification } from 'antd';
 const contentStyle: React.CSSProperties = {
     marginLeft: 'auto',
     height: '330px',
@@ -23,7 +24,7 @@ const contentStyle: React.CSSProperties = {
 
 const CreateOrder =(data:any) =>{
     console.log(data)
-    AxiosClient.post(`${App.ApiUrl}}/create/order`,data)
+    AxiosClient.post(`${App.ApiUrl}/create/order`,data)
         .then(r=>{
             if (r.success){
                 console.log(r)
@@ -221,6 +222,8 @@ const UserOrderCreateScreen = () =>{
         const updateOrderList = Object.values(userOrderList).filter((order: any) => order.bike_classify === '1');
         console.log(userOrderList);
         console.log(updateOrderList);
+        const filteredData2 = userOrderList.filter((item:any) => item.bike_address !== selectedValue);
+        console.log(filteredData2)
         const orderIdsString = orderIds.join(',');
         const quality = Object.values(userOrderList).length;
         const bikeIds = Object.values(userOrderList).map((item: any) => item.bike_id);
@@ -237,12 +240,28 @@ const UserOrderCreateScreen = () =>{
                 content: 'Loading...',
             });
             setTimeout(async () => {
-
-                if (formattedStartDate < currentTime || formattedEndDate < currentTime) {
+           if(filteredData2.length!==0){
+               const bikeNames = filteredData2.map((item: any) => (
+                   <li key={item.bike_id}>{item.bike_name}</li>
+               ));
+               const description = <ul>{bikeNames}</ul>;
+               notification.open({
+                   message: 'オーダーの住所と異なる住所のバイクがあります',
+                   description,
+                   duration: 5, // Thời gian hiển thị thông báo (giây)
+                   type: 'error',
+               });
+               }
+           else if(time===0)
+           {
+               message.error('フルタイムを入力してください');
+           }
+               else if (formattedStartDate < currentTime || formattedEndDate < currentTime) {
                     message.error('後日または今日を入力してください');
                 } else if (formattedStartDate > formattedEndDate) {
                     message.error('終了日は開始日よりも後の日付にする必要があります');
                 } else {
+
                     const data = {
                         order_start: `${formattedStartDate} ${formattedStartTime}`,
                         order_end: `${formattedEndDate} ${formattedEndTime}`,
@@ -250,7 +269,7 @@ const UserOrderCreateScreen = () =>{
                         order_total: money,
                         order_time: time,
                         user_id: user.data.id, // Cập nhật với ID người dùng chính xác
-                        order_address: userOrderList[0].bike_address, // Cập nhật với địa chỉ chính xác
+                        order_address: selectedValue, // Cập nhật với địa chỉ chính xác
                         bikes: orderIdsString,
                         bike_quantity: quality,
                     };
@@ -263,7 +282,6 @@ const UserOrderCreateScreen = () =>{
                         setButton2(true);
                         await CreateOrder(data); // Chờ thông báo hoàn thành
                         console.log(maxOrderId + 1);
-
                         navigate(`/userOrderDetail/${maxOrderId+1}`)
                     }
                     console.log(data);
@@ -278,7 +296,7 @@ const UserOrderCreateScreen = () =>{
     // @ts-ignore
     return(
         <>
-            <Row style={{marginTop:'40px',minHeight:'550px'}}>
+            <Row style={{marginTop:'40px',minHeight:'600px'}}>
                 <Col style={{marginLeft:'230px'}}>
                     <div style={{ display: 'flex' }}>
                         <div
@@ -295,7 +313,7 @@ const UserOrderCreateScreen = () =>{
 
                                 <div key={item.bike_id} style={{display:'flex',width:'90%'}}>
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={`/storage/app/public/bike_image/${item.bike_id}.1.jpg`} alt=""
+                                    <img src={`${App.ApiUrl}${item.bikeImage[0].bike_image}`} alt=""
                                          style={{width:'130px',border:'1px solid #C38154',marginRight:'10px',marginBottom:'10px'}}/>
                                     <div style={{width:"320px"}}>
                                         <b style={{fontSize:'18px',marginRight:'50px'}}>{ item.bike_name}</b>
@@ -342,7 +360,7 @@ const UserOrderCreateScreen = () =>{
                                     placeholder="住所を選択してください"
                                     style={{width:'400px',borderRadius:'0px'}}
                                 >
-                                    <Option value="250 Minh Khai, Hai ba trung, Ha noi">250 Minh Khai, Hai ba trung, Ha noi</Option>
+                                    <Option value="250 Minh Khai, Hai Ba Trung, Ha Noi">250 Minh Khai, Hai ba trung, Ha noi</Option>
                                     <Option value="03 Thuy Khue, Tay Ho, Ha Noi">03 Thuy Khue, Tay Ho, Ha Noi</Option>
                                     <Option value="29 Gia Thuy, Long Bien, Ha Noi">29 Gia Thuy, Long Bien, Ha Noi</Option>
                                     <Option value="28 Nguyen Dong Chi, Cau Dien, Nam Tu Liem, Ha Noi">28 Nguyen Dong Chi, Cau Dien, Nam Tu Liem, Ha Noi</Option>
@@ -361,11 +379,11 @@ const UserOrderCreateScreen = () =>{
                     <div style={contentStyle}>
                         <div style={{ textAlign: 'center', marginBottom:"20px" }}>
                             <b style={{ fontSize: '30px', fontWeight:"bold" }}>領収書</b>
-                            <p style={{ textAlign: 'right',marginRight:'50px',fontSize:'24px' }}>¥{money}/時間</p>
+                            <p style={{ textAlign: 'right',marginRight:'50px',fontSize:'24px' }}>{money}VND/時間</p>
                             <p style={{ textAlign: 'right',marginRight:'50px',fontSize:'24px' }}>{time} 時間</p>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop:"30px"}}>
                                 <b style={{ marginLeft: '80px' ,fontSize:'30px'}}>合計:</b>
-                                <b style={{ marginRight: '80px' ,fontSize:'30px'}}>¥{money*time}</b>
+                                <b style={{ marginRight: '80px' ,fontSize:'30px'}}>{money*time}VND</b>
                             </div>
                         </div>
                         <div style={{marginBottom:'10px', display:"flex", justifyContent:"center", marginTop:"75px"}}>

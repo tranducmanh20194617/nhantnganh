@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Form, Input, message} from "antd";
 import {useNavigate} from "react-router-dom";
 import {AxiosClient} from "@/client/repositories/AxiosClient";
-
+import {App} from "@/client/const/App";
 const HomeScreen = () => {
     const navigate = useNavigate();
     useEffect(() => {
@@ -15,7 +15,7 @@ const HomeScreen = () => {
     }, [])
     const getData =(value:any) =>{
         AxiosClient
-            .get(`http://127.0.0.1:8000/bikes?&local=${value}`)
+            .get(`${App.ApiUrl}/bikes?&local=${value}`)
             .then(r => {
                 console.log(value)
                 navigate(`/bikeList/${value}`)

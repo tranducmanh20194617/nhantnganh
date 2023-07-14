@@ -65,7 +65,7 @@ const LoginScreen = () => {
     return (
         <div>
             <div className="row-container" style={{border:'1px solid',borderRadius: '20px',padding:'15px',backgroundColor:'#cfb7a1'}} >
-                <div className="demo-logo"  />
+                <div className="demo-logo"/>
                 <span style={{ marginLeft: '25px', marginRight: '25px', display: 'inline-block', verticalAlign: 'middle' }}  ><b >バイク 借り</b></span>
 
             </div>

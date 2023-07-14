@@ -138,7 +138,8 @@ const onLogin =()=>{
         if(key==='1')
         {
             setSelectedItem('1')
-            navigate(`/bikeList`);
+            navigate('/bikeList');
+
         }
         else if(key==='2')
         {
@@ -170,19 +171,22 @@ const onLogin =()=>{
         backgroundColor: 'white',
         color: '#333',
     };
+    const handleHome1 =()=>{
+        navigate(`/bikeList`);
+    }
     const handleHome =()=>{
-        navigate('/')
+        navigate(`/`);
     }
     return (
 
         <>
             <div style = {{   backgroundColor : '#fdfaf5' }}>
-           <Row style={{border:'1px solid',borderRadius: '20px',padding:'15px',backgroundColor:'#cfb7a1'}}>
+           <Row style={{border:'1px solid',borderRadius: '20px',padding:'15px',backgroundColor:'#cfb7a1',}}>
                <Col md={21} style={{display:"inline-block"}}>
                    <div className="row-container" >
                        <div className="demo-logo" />
                        <MenuUnfoldOutlined style={{ padding: '5px', fontSize: '20px', verticalAlign: 'middle' }} onClick={handleHome} />
-                       <span style={{ marginLeft: '25px', marginRight: '25px', display: 'inline-block', verticalAlign: 'middle' }}  ><b onClick={handleHome}>バイク 借り</b></span>
+                       <span style={{ marginLeft: '25px', marginRight: '25px', display: 'inline-block', verticalAlign: 'middle' }}  ><b onClick={handleHome1}>バイク 借り</b></span>
                        <Menu
                            theme="dark"
                            mode="horizontal"
@@ -215,7 +219,7 @@ const onLogin =()=>{
 
             <Outlet/>
 
-            <Row style={{border:'1px solid',borderRadius: '20px',padding:'15px',backgroundColor:'#cfb7a1'}}>
+            <Row style={{border:'1px solid',borderRadius: '20px',padding:'15px',backgroundColor:'#cfb7a1',minHeight:'100px'}}>
                 <Col md={17}>
                     <p style={{marginLeft:'25px',marginRight:'25px',fontSize:'15px'}}>バイク 借り</p>
                 </Col>

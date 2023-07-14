@@ -301,7 +301,7 @@ const UserOrderDetailScreen = () => {
 
                                     <div key={item.bike_id} style={{display: 'flex', width: '90%'}}>
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={`/storage/app/public/bike_image/${item.bike_id}.1.jpg`} alt=""
+                                            <img src={`${App.ApiUrl}${item[0].bike_image}`} alt=""
                                              style={{width: '130px', border: '1px solid #C38154', marginRight: '10px', marginBottom: '10px'}}/>
                                         <div style={{width: "320px"}}>
                                             <b style={{fontSize: '18px', marginRight: '50px'}}>{item.bike_name}</b>
@@ -331,7 +331,7 @@ const UserOrderDetailScreen = () => {
                                     <CalendarOutlined style={{marginLeft: "20px"}}/>
                                 </div>
                                 <div style={{margin: "auto", border: "solid 2px rgb(132, 115, 94)", padding: "10px", width: "120px"}}>
-                                    {orderStart.getHours().toString().padStart(2, "0") + ":" + orderStart.getMinutes().toString().padStart(2, "0") + ":" + orderStart.getSeconds().toString().padStart(2, "0")}
+                                    {orderStart.getHours().toString().padStart(2, "0") + ":" + orderStart.getMinutes().toString().padStart(2, "0")}
                                     <ClockCircleOutlined style={{marginLeft: "20px"}}/>
                                 </div>
                             </div>
@@ -342,7 +342,7 @@ const UserOrderDetailScreen = () => {
                                     <CalendarOutlined style={{marginLeft: "20px"}}/>
                                 </div>
                                 <div style={{margin: "auto", border: "solid 2px rgb(132, 115, 94)", padding: "10px", width: "120px"}}>
-                                    {orderEnd.getHours().toString().padStart(2, "0") + ":" + orderEnd.getMinutes().toString().padStart(2, "0") + ":" + orderEnd.getSeconds().toString().padStart(2, "0")}
+                                    {orderEnd.getHours().toString().padStart(2, "0") + ":" + orderEnd.getMinutes().toString().padStart(2, "0")}
                                     <ClockCircleOutlined style={{marginLeft: "20px"}}/>
                                 </div>
                             </div>
@@ -367,11 +367,11 @@ const UserOrderDetailScreen = () => {
                         }}>
                             <div style={{ textAlign: 'center', marginBottom:"20px" }}>
                                 <b style={{ fontSize: '30px', fontWeight:"bold" }}>領収書</b>
-                                <p style={{ textAlign: 'right',marginRight:'50px',fontSize:'24px' }}>¥{userOrderOrder.order_total}/時間</p>
+                                <p style={{ textAlign: 'right',marginRight:'50px',fontSize:'24px' }}>{userOrderOrder.order_total}VND/時間</p>
                                 <p style={{ textAlign: 'right',marginRight:'50px',fontSize:'24px' }}>{userOrderOrder.order_time} 時間</p>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop:"30px"}}>
                                     <b style={{ marginLeft: '80px' ,fontSize:'30px'}}>合計:</b>
-                                    <b style={{ marginRight: '80px' ,fontSize:'30px'}}>¥{userOrderOrder.order_total*userOrderOrder.order_time}</b>
+                                    <b style={{ marginRight: '80px' ,fontSize:'30px'}}>{userOrderOrder.order_total*userOrderOrder.order_time}VND</b>
                                 </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -390,11 +390,11 @@ const UserOrderDetailScreen = () => {
                             display:displayOrderStatus1[userOrderOrder.order_status]}}>
                             <div style={{ textAlign: 'center', marginBottom:"20px" }}>
                                 <b style={{ fontSize: '30px', fontWeight:"bold" }}>領収書</b>
-                                <p style={{ textAlign: 'right',marginRight:'50px',fontSize:'24px' }}>¥{userOrderOrder.order_total}+¥50/時間</p>
+                                <p style={{ textAlign: 'right',marginRight:'50px',fontSize:'24px' }}>{userOrderOrder.order_total}+5000VND/時間</p>
                                 <p style={{ textAlign: 'right',marginRight:'50px',fontSize:'24px' }}>{userOrderOrder.order_time} 時間</p>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop:"30px"}}>
                                     <b style={{ marginLeft: '80px' ,fontSize:'30px'}}>合計:</b>
-                                    <b style={{ marginRight: '80px' ,fontSize:'30px'}}>¥{(userOrderOrder.order_total+50)*userOrderOrder.order_time}</b>
+                                    <b style={{ marginRight: '80px' ,fontSize:'30px'}}>{(userOrderOrder.order_total+5000)*userOrderOrder.order_time}VND</b>
                                 </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>

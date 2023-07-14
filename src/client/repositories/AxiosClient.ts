@@ -46,6 +46,7 @@ export class AxiosClient {
         data?: Record<string, any>
     ) {
         const config = this.getConfig()
+        console.log(config)
         return axios
             .post(url, data, config)
             .then(r => r.data)

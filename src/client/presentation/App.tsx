@@ -28,7 +28,7 @@ export const App = () => {
             <Route key={"register"} path={"/register"} element={<RegisterScreen/>}/>
             <Route element={<MasterLayout/>}>
                 <Route key={"home"} path={"/"} element={<HomeScreen/>}/>
-                <Route key={"productList"} path={"/bikeList/:local?/:brand?/:price?"} element={<BikeListScreen/>}/>
+                <Route key={"productList"} path={"/bikeList/:local?/:brand?/:price?/:price1?"} element={<BikeListScreen/>}/>
                 <Route key={"bikeDetail"} path={"/bikeDetail/:bikeId"} element={<BikeDetailScreen/>}/>
 
                 <Route key={"userOrderDetail"} path={"/userOrderDetail/:orderId?"} element={<UserOrderDetailScreen/>}/>
